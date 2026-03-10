@@ -1,49 +1,69 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useState, useMemo } from 'react'
-import wordsData from '../data/words.json'
+import { useState, useEffect, useMemo } from 'react'
+import { db } from '../firebase/config'
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
+import useAuth from '../hooks/useAuth'
 import useProgress from '../hooks/useProgress'
 
 function QuizPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getStatus, updateStatus } = useProgress()
+  const { user } = useAuth()
+  const { getStatus, updateStatus } = useProgress(user?.uid, id)
 
-  const book = wordsData.find((b) => b.id === id)
-  const allWords = book.words
-
-  // 퀴즈 문제 생성
-  const questions = useMemo(() => {
-    return allWords.map((word) => {
-      // 오답 보기 3개 랜덤 선택
-      const wrongChoices = allWords
-        .filter((w) => w.id !== word.id)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3)
-        .map((w) => w.meaning)
-
-      // 4개 보기 섞기
-      const choices = [...wrongChoices, word.meaning].sort(() => Math.random() - 0.5)
-
-      return { word, choices, answer: word.meaning }
-    })
-  }, [])
-
+  const [words, setWords] = useState([])
+  const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selected, setSelected] = useState(null)
   const [score, setScore] = useState(0)
   const [isFinished, setIsFinished] = useState(false)
 
+  // Firestore에서 단어 불러오기
+  useEffect(() => {
+    if (!user) return
+    const q = query(
+      collection(db, 'users', user.uid, 'wordbooks', id, 'words'),
+      orderBy('createdAt', 'asc')
+    )
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      setWords(data)
+      setLoading(false)
+    })
+    return unsubscribe
+  }, [user, id])
+
+  // 퀴즈 문제 생성
+  const questions = useMemo(() => {
+    if (words.length < 4) return []
+    return words.map((word) => {
+      const wrongChoices = words
+        .filter((w) => w.id !== word.id)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3)
+        .map((w) => w.meaning)
+      const choices = [...wrongChoices, word.meaning].sort(() => Math.random() - 0.5)
+      return { word, choices, answer: word.meaning }
+    })
+  }, [words])
+
+  if (loading) return <p className="text-center text-gray-400 mt-10">로딩 중...</p>
+
+  if (words.length < 4) return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+      <p className="text-gray-400 mb-4">퀴즈는 단어가 4개 이상 필요해요!</p>
+      <button onClick={() => navigate(`/wordbook/${id}`)} className="text-blue-500">← 단어 추가하러 가기</button>
+    </div>
+  )
+
   const currentQuestion = questions[currentIndex]
 
   const handleSelect = (choice) => {
-    if (selected) return  // 이미 선택했으면 무시
+    if (selected) return
     setSelected(choice)
-
     const isCorrect = choice === currentQuestion.answer
-
     if (isCorrect) {
       setScore(score + 1)
-      // 오답이었다가 정답 맞추면 known으로 변경
       if (getStatus(currentQuestion.word.id) === 'quiz_wrong') {
         updateStatus(currentQuestion.word.id, 'known')
       }
@@ -95,7 +115,7 @@ function QuizPage() {
       {/* 헤더 */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate(`/wordbook/${id}`)} className="text-gray-400 hover:text-gray-600 text-xl">←</button>
-        <h1 className="text-xl font-bold text-gray-800">{book.title} 퀴즈</h1>
+        <h1 className="text-xl font-bold text-gray-800">퀴즈</h1>
         <span className="ml-auto text-gray-400 text-sm">{currentIndex + 1} / {questions.length}</span>
       </div>
 

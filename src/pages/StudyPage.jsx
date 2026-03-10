@@ -1,18 +1,43 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
-import wordsData from '../data/words.json'
+import { useState, useEffect } from 'react'
+import { db } from '../firebase/config'
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
+import useAuth from '../hooks/useAuth'
 import useProgress from '../hooks/useProgress'
 
 function StudyPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getStatus, updateStatus } = useProgress()
+  const { user } = useAuth()
+  const { getStatus, updateStatus } = useProgress(user?.uid, id)
 
-  const book = wordsData.find((b) => b.id === id)
-  const words = book.words
-
+  const [words, setWords] = useState([])
+  const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
+
+  // Firestore에서 단어 불러오기
+  useEffect(() => {
+    if (!user) return
+    const q = query(
+      collection(db, 'users', user.uid, 'wordbooks', id, 'words'),
+      orderBy('createdAt', 'asc')
+    )
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      setWords(data)
+      setLoading(false)
+    })
+    return unsubscribe
+  }, [user, id])
+
+  if (loading) return <p className="text-center text-gray-400 mt-10">로딩 중...</p>
+  if (words.length === 0) return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+      <p className="text-gray-400 mb-4">등록된 단어가 없어요!</p>
+      <button onClick={() => navigate(`/wordbook/${id}`)} className="text-blue-500">← 단어 추가하러 가기</button>
+    </div>
+  )
 
   const currentWord = words[currentIndex]
 
@@ -52,7 +77,7 @@ function StudyPage() {
       {/* 헤더 */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate(`/wordbook/${id}`)} className="text-gray-400 hover:text-gray-600 text-xl">←</button>
-        <h1 className="text-xl font-bold text-gray-800">{book.title} 학습</h1>
+        <h1 className="text-xl font-bold text-gray-800">학습</h1>
         <span className="ml-auto text-gray-400 text-sm">{currentIndex + 1} / {words.length}</span>
       </div>
 
@@ -71,12 +96,10 @@ function StudyPage() {
       >
         <div className="w-full bg-white rounded-3xl shadow-md p-8 min-h-64 flex flex-col items-center justify-center text-center border border-gray-100">
           {!isFlipped ? (
-            // 앞면 - 영어 단어
             <div>
               <p className="text-sm text-gray-400 mb-4">카드를 클릭해서 뜻 확인하기</p>
               <h2 className="text-4xl font-bold text-gray-800">{currentWord.word}</h2>
               <p className="text-gray-400 text-sm mt-3">{currentWord.part_of_speech}</p>
-              {/* 발음 버튼 */}
               <button
                 className="mt-6 px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-500 hover:bg-gray-200 transition"
                 onClick={(e) => { e.stopPropagation(); speak(currentWord.word) }}
@@ -85,11 +108,10 @@ function StudyPage() {
               </button>
             </div>
           ) : (
-            // 뒷면 - 한글 뜻 + 예문
             <div>
               <h2 className="text-3xl font-bold text-blue-500">{currentWord.meaning}</h2>
-              <p className="text-gray-500 mt-4 italic">{currentWord.example}</p>
-              <p className="text-gray-400 text-sm mt-2">{currentWord.example_kr}</p>
+              {currentWord.example && <p className="text-gray-500 mt-4 italic">{currentWord.example}</p>}
+              {currentWord.example_kr && <p className="text-gray-400 text-sm mt-2">{currentWord.example_kr}</p>}
             </div>
           )}
         </div>
