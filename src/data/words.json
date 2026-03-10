@@ -1,0 +1,96 @@
+[
+  {
+    "id": "day1",
+    "title": "DAY 1",
+    "description": "인사 및 소개 관련 어휘",
+    "words": [
+      {
+        "id": 1,
+        "word": "negotiate",
+        "meaning": "협상하다",
+        "part_of_speech": "verb",
+        "example": "We need to negotiate the terms of the contract.",
+        "example_kr": "우리는 계약 조건을 협상해야 한다."
+      },
+      {
+        "id": 2,
+        "word": "deadline",
+        "meaning": "마감 기한",
+        "part_of_speech": "noun",
+        "example": "The deadline for the project is next Friday.",
+        "example_kr": "프로젝트 마감일은 다음 주 금요일이다."
+      },
+      {
+        "id": 3,
+        "word": "collaborate",
+        "meaning": "협력하다",
+        "part_of_speech": "verb",
+        "example": "The two companies decided to collaborate on the project.",
+        "example_kr": "두 회사는 프로젝트에서 협력하기로 결정했다."
+      },
+      {
+        "id": 4,
+        "word": "budget",
+        "meaning": "예산",
+        "part_of_speech": "noun",
+        "example": "The budget for this year has been approved.",
+        "example_kr": "올해 예산이 승인되었다."
+      },
+      {
+        "id": 5,
+        "word": "implement",
+        "meaning": "시행하다",
+        "part_of_speech": "verb",
+        "example": "We will implement the new policy next month.",
+        "example_kr": "우리는 다음 달에 새로운 정책을 시행할 것이다."
+      }
+    ]
+  },
+  {
+    "id": "day2",
+    "title": "DAY 2",
+    "description": "비즈니스 및 업무 관련 어휘",
+    "words": [
+      {
+        "id": 6,
+        "word": "proposal",
+        "meaning": "제안서",
+        "part_of_speech": "noun",
+        "example": "She submitted a proposal for the new project.",
+        "example_kr": "그녀는 새 프로젝트에 대한 제안서를 제출했다."
+      },
+      {
+        "id": 7,
+        "word": "allocate",
+        "meaning": "할당하다",
+        "part_of_speech": "verb",
+        "example": "We need to allocate more resources to this department.",
+        "example_kr": "우리는 이 부서에 더 많은 자원을 할당해야 한다."
+      },
+      {
+        "id": 8,
+        "word": "revenue",
+        "meaning": "수익",
+        "part_of_speech": "noun",
+        "example": "The company's revenue increased by 20% this year.",
+        "example_kr": "회사의 수익이 올해 20% 증가했다."
+      },
+      {
+        "id": 9,
+        "word": "dispute",
+        "meaning": "분쟁, 논쟁",
+        "part_of_speech": "noun",
+        "example": "The dispute between the two parties was resolved.",
+        "example_kr": "두 당사자 간의 분쟁이 해결되었다."
+      },
+      {
+        "id": 10,
+        "word": "comprehensive",
+        "meaning": "포괄적인",
+        "part_of_speech": "adjective",
+        "example": "She wrote a comprehensive report on the issue.",
+        "example_kr": "그녀는 그 문제에 대한 포괄적인 보고서를 작성했다."
+      }
+    ]
+  }
+]
